@@ -9,9 +9,7 @@ load "config/recipes/rbenv"
 load "config/recipes/env"
 load "config/recipes/check"
 
-role :web, "97.107.140.229"
-role :app, "97.107.140.229"
-role :db, "97.107.140.229", primary: true
+server "97.107.140.229", :web, :app, :db, primary: true
 
 set :user, "deployer"
 set :application, "test_app"

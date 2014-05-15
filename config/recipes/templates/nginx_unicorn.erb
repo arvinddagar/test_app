@@ -4,7 +4,7 @@ upstream unicorn_<%= application %> {
 
 server {
   listen <%= is_https? ? "443" : "80" %> <%= "default deferred" if is_default? %>;
-  server_name www.<%= base_domain %>;
+  server_name <%= base_domain %>;
   root <%= current_path %>/public;
 
   <% if is_https? %>
@@ -38,23 +38,23 @@ server {
 server {
   listen 443;
   server_name <%= base_domain %>;
-  rewrite     ^ https://www.<%= base_domain %>$request_uri? permanent;
-}
-server {
-  listen 80;
-  server_name www.<%= base_domain %>;
-  rewrite     ^ https://www.<%= base_domain %>$request_uri? permanent;
+  rewrite     ^ https://<%= base_domain %>$request_uri? permanent;
 }
 server {
   listen 80;
   server_name <%= base_domain %>;
-  rewrite     ^ https://www.<%= base_domain %>$request_uri? permanent;
+  rewrite     ^ https://<%= base_domain %>$request_uri? permanent;
+}
+server {
+  listen 80;
+  server_name <%= base_domain %>;
+  rewrite     ^ https://<%= base_domain %>$request_uri? permanent;
 }
 
 <% else %>
 server {
   listen 80;
   server_name <%= base_domain %>;
-  rewrite     ^ http://www.<%= base_domain %>$request_uri? permanent;
+  rewrite     ^ http://<%= base_domain %>$request_uri? permanent;
 }
 <% end %>
