@@ -1,86 +1,46 @@
-set :application, 'test_app'
-set :deploy_user, 'deployer'
+require "bundler/capistrano"
 
-# setup repo details
-set :scm, :git
-set :repo_url, 'git@github.com:arvinddagar/test_app.git'
+load "config/recipes/base"
+load "config/recipes/nginx"
+load "config/recipes/unicorn"
+load "config/recipes/postgresql"
+load "config/recipes/nodejs"
+load "config/recipes/rbenv"
+load "config/recipes/env"
+load "config/recipes/check"
 
-# setup rvm.
-set :rbenv_type, :system
-set :rbenv_ruby, '2.1.1'
-set :rbenv_prefix, "RBENV_ROOT=#{fetch(:rbenv_path)} RBENV_VERSION=#{fetch(:rbenv_ruby)} #{fetch(:rbenv_path)}/bin/rbenv exec"
-set :rbenv_map_bins, %w{rake gem bundle ruby rails}
+role :web, "97.107.140.229"
+role :app, "97.107.140.229"
+role :db, "97.107.140.229", primary: true
 
-# how many old releases do we want to keep, not much
-set :keep_releases, 5
+set :user, "deployer"
+set :application, "test_app"
+set :base_domain, "97.107.140.229"
+set :deploy_to, "/home/#{user}/apps/#{application}"
+set :deploy_via, :remote_cache
+set :use_sudo, false
+set :default_environment, {
+  'PATH' => "$HOME/.rbenv/shims:$HOME/.rbenv/bin:$PATH"
+}
 
-# files we want symlinking to specific entries in shared
-set :linked_files, %w{config/database.yml}
-
-# dirs we want symlinking to shared
-set :linked_dirs, %w{bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system}
-
-# what specs should be run before deployment is allowed to
-# continue, see lib/capistrano/tasks/run_tests.cap
-set :tests, []
-
-# which config files should be copied by deploy:setup_config
-# see documentation in lib/capistrano/tasks/setup_config.cap
-# for details of operations
-set(:config_files, %w(
-  nginx.conf
-  database.example.yml
-  unicorn.rb
-  unicorn_init.sh
-))
-
-# which config files should be made executable after copying
-# by deploy:setup_config
-set(:executable_config_files, %w(
-  unicorn_init.sh
-))
+set :is_default?, false #set true if this app is the 'default' or 'primary' nginx site (there can only be one default)
+set :is_https?, false #set true if using HTTPS
 
 
-# files which need to be symlinked to other parts of the
-# filesystem. For example nginx virtualhosts, log rotation
-# init scripts etc. The full_app_name variable isn't
-# available at this point so we use a custom template {{}}
-# tag and then add it at run time.
-set(:symlinks, [
-  {
-    source: "nginx.conf",
-    link: "/etc/nginx/sites-enabled/{{full_app_name}}"
-  },
-  {
-    source: "unicorn_init.sh",
-    link: "/etc/init.d/unicorn_{{full_app_name}}"
-  }
-])
+set :scm, "git"
+set :repository, "git@github.com:arvinddagar/#{application}.git"
+set :branch, "master"
 
-# this:
-# http://www.capistranorb.com/documentation/getting-started/flow/
-# is worth reading for a quick overview of what tasks are called
-# and when for `cap stage deploy`
 
-namespace :deploy do
-  # make sure we're deploying what we think we're deploying
-  before :deploy, "deploy:check_revision"
-  # only allow a deploy with passing tests to deployed
-  before :deploy, "deploy:run_tests"
-  # compile assets locally then rsync
-  after 'deploy:symlink:shared', 'deploy:compile_assets_locally'
-  after :finishing, 'deploy:cleanup'
+default_run_options[:pty] = true
+ssh_options[:forward_agent] = true
 
-  # remove the default nginx configuration as it will tend
-  # to conflict with our configs.
-  before 'deploy:setup_config', 'nginx:remove_default_vhost'
+after "deploy", "deploy:cleanup" # keep only the last 5 releases
 
-  # reload nginx to it will pick up any modified vhosts from
-  # setup_config
-  after 'deploy:setup_config', 'nginx:reload'
+#Uncomment for carrierwave gem, which uploads to public/uploads (don't want to overwrite of uploads on each deployment)
+#set :shared_children, shared_children + %w{public/uploads}
 
-  # As of Capistrano 3.1, the `deploy:restart` task is not called
-  # automatically.
-  after 'deploy:publishing', 'deploy:restart'
-end
-
+# Uncomment to include path to SSL, don't forget to chown root and chmod 400
+# You'll need to manually place your certificate files on the server - this doesn't do it for you I'm afraid.
+#set :ssl_cert_path, "/home/#{user}/apps/#{application}/cert.crt"
+#set :ssl_key_path, "/home/#{user}/apps/#{application}/cert.key"

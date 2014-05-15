@@ -12,12 +12,12 @@ gem 'turbolinks'
 gem 'jbuilder', '~> 2.0'
 gem 'spring',        group: :development
 
-# server
+
+# Use unicorn as the app server
 gem 'unicorn'
-gem 'capistrano', '~> 3.2.0'
-gem 'capistrano-rbenv'
-gem 'capistrano-bundler'
-gem 'capistrano-rails'
+
+# Deploy with Capistrano
+gem 'capistrano', '~> 2.15.4'
 
 group :development, :test do
   gem 'rspec-rails'
