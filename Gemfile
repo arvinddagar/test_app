@@ -11,7 +11,13 @@ gem 'jquery-rails'
 gem 'turbolinks'
 gem 'jbuilder', '~> 2.0'
 gem 'spring',        group: :development
-gem 'puma'
+
+# server
+gem 'unicorn'
+gem 'capistrano', '~> 3.2.0'
+gem 'capistrano-rbenv'
+gem 'capistrano-bundler'
+gem 'capistrano-rails'
 
 group :development, :test do
   gem 'rspec-rails'
