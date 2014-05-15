@@ -1,0 +1,22 @@
+<h1>Showing all entries in Configuration Table...</h1>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <%= render @settings %>
+</table>
+
+
+<h1>Add Value</h1>
+
+<%= form_for(Setting.new, remote: true) do |f| %>
+  <%= f.label :name %>
+  <%= f.text_field :name %><br>
+  <%= f.label :value %>
+  <%= f.text_field :value %><br>
+  <%= f.label :data_type %>
+  <%= f.select :data_type, Setting::DataTypes %><br>
+  <%= f.submit %>
+<% end %>
